@@ -1,41 +1,13 @@
 import sys
 import copy
+import numpy as np
 import cv2 as cv
 import mediapipe as mp
-import numpy as np
+import time  # 時間遅延を使うためのインポート
 
 # 矢印の描画パラメータ
 arrow_length = 50
 arrow_color = (0, 255, 0)  # 矢印の色を設定（BGR形式）
-
-
-def check_camera_connection():
-    """
-    接続されているカメラをチェック
-    """
-
-    print('接続されているカメラの番号を調べています...')
-    true_camera_is = []  # 空の配列を用意
-    cam_number = []
-
-    # カメラ番号を0～9まで変えて、COM_PORTに認識されているカメラを探す
-    for camera_number in range(0, 10):
-        try:
-            cap = cv2.VideoCapture(camera_number)
-            ret, frame = cap.read()
-        except:
-            ret = False
-        if ret == True:
-            true_camera_is.append(camera_number)
-            print("カメラ番号->", camera_number, "接続済")
-
-            cam_number.append(camera_number)
-        else:
-            print("カメラ番号->", camera_number, "未接続")
-    print("接続されているカメラは", len(true_camera_is), "台です。")
-    print("カメラのインデックスは", true_camera_is,"です。")
-    sys.exit("カメラ番号を調べ終わりました。")
-    return 0
 
 # モデルロード
 mp_face_mesh = mp.solutions.face_mesh
@@ -67,10 +39,12 @@ def calc_iris_min_enc_losingCircle(image, landmarks):
 
 def get_eye_direction(eye_start, eye_end, iris_center):
     eye_width = np.abs(eye_end[0] - eye_start[0])
+    if eye_width == 0:  # 目の幅がゼロの場合、エラーを防ぐ
+        return 'center'
     relative_position = (iris_center[0] - eye_start[0]) / eye_width
-    if relative_position < 0.4:
+    if relative_position < 0.5:
         return 'left'
-    elif relative_position > 0.6:
+    elif relative_position > 0.7:
         return 'right'
     else:
         return 'center'
@@ -86,8 +60,10 @@ def draw_gaze_arrow(image, eye_center, iris_center, direction, arrow_length):
     return image
 
 if __name__ == '__main__':
-    check_camera_connection()
-    cap = cv.VideoCapture(1)  # Webカメラをキャプチャ
+    cap = cv.VideoCapture(0)  # Webカメラをキャプチャ
+
+    prev_left_direction = None
+    prev_right_direction = None
 
     while True:
         ret, image = cap.read()
@@ -107,12 +83,20 @@ if __name__ == '__main__':
                 left_direction = get_eye_direction(left_eye_info[0], right_eye_info[0], left_eye_info[0])
                 right_direction = get_eye_direction(left_eye_info[0], right_eye_info[0], right_eye_info[0])
 
+                # 目線方向の変化ログを出力
+                if left_direction != prev_left_direction or right_direction != prev_right_direction:
+                    print(f"Left Eye Direction: {left_direction}, Right Eye Direction: {right_direction}")
+                    prev_left_direction = left_direction
+                    prev_right_direction = right_direction
+
                 # 矢印描画
                 debug_image = draw_gaze_arrow(debug_image, left_eye_info[0], left_eye_info[0], left_direction, arrow_length)
                 debug_image = draw_gaze_arrow(debug_image, right_eye_info[0], right_eye_info[0], right_direction, arrow_length)
 
         cv.imshow('Eye Gaze Detection', debug_image)
-        if cv.waitKey(1) & 0xFF == 27:  # ESCキーで終了
+
+        # 目線方向が変わるまで待機（ゆっくりとした感覚で目線を入力）
+        if cv.waitKey(300) & 0xFF == 27:  # 0.3秒待機（ESCキーで終了）
             break
 
     cap.release()
