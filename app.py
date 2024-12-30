@@ -38,18 +38,43 @@ def calc_iris_min_enc_losingCircle(image, landmarks):
     return left_eye_info, right_eye_info
 
 def get_eye_direction(eye_start, eye_end, iris_center):
+    # 目の水平方向の長さを計算
     eye_width = np.abs(eye_end[0] - eye_start[0])
-    if eye_width == 0:  # 目の幅がゼロの場合、エラーを防ぐ
-        return 'center'
+    
+    # 虹彩の中心が目の水平方向のどの位置にあるかを計算
     relative_position = (iris_center[0] - eye_start[0]) / eye_width
-    if relative_position < 0.5:
+    
+    # 両目の位置が非常に近い場合（目が正面を向いている場合）は"center"
+    if abs(eye_end[0] - eye_start[0]) < 10:  # Threshold for straight-on alignment
+        return 'center'
+    
+    # 虹彩の位置に基づいて方向を判断
+    if relative_position < 0.4:
         return 'left'
-    elif relative_position > 0.7:
+    elif relative_position > 0.6:
         return 'right'
     else:
         return 'center'
 
+
+def is_centered(left_direction, right_direction):
+    # 両目ともにcenterならcenterとして判定
+    return left_direction == 'center' and right_direction == 'center'
+
 def draw_gaze_arrow(image, eye_center, iris_center, direction, arrow_length):
+    """
+    目がどちらを向いているかを示す矢印を描画する関数
+
+    Parameters:
+    - image: 画像
+    - eye_center: 目の中心の座標
+    - iris_center: 虹彩の中心の座標
+    - direction: 'left', 'right', or 'center'
+    - length: 矢印の長さ
+
+    Returns:
+    - image: 矢印が描画された画像
+    """
     if direction == 'left':
         end_point = (eye_center[0] - arrow_length, eye_center[1])
     elif direction == 'right':
@@ -84,19 +109,22 @@ if __name__ == '__main__':
                 right_direction = get_eye_direction(left_eye_info[0], right_eye_info[0], right_eye_info[0])
 
                 # 目線方向の変化ログを出力
-                if left_direction != prev_left_direction or right_direction != prev_right_direction:
-                    print(f"Left Eye Direction: {left_direction}, Right Eye Direction: {right_direction}")
-                    prev_left_direction = left_direction
-                    prev_right_direction = right_direction
+                if not is_centered(left_direction, right_direction):
+                    if left_direction != prev_left_direction or right_direction != prev_right_direction:
+                        print(f"Left Eye Direction: {left_direction}, Right Eye Direction: {right_direction}")
+                        prev_left_direction = left_direction
+                        prev_right_direction = right_direction
+                else:
+                    print(f"Both Eyes Centered: Left Eye Direction: {left_direction}, Right Eye Direction: {right_direction}")
 
                 # 矢印描画
                 debug_image = draw_gaze_arrow(debug_image, left_eye_info[0], left_eye_info[0], left_direction, arrow_length)
                 debug_image = draw_gaze_arrow(debug_image, right_eye_info[0], right_eye_info[0], right_direction, arrow_length)
 
-        cv.imshow('Eye Gaze Detection', debug_image)
+        # 画面に結果を表示
+        cv.imshow("Gaze Direction", debug_image)
 
-        # 目線方向が変わるまで待機（ゆっくりとした感覚で目線を入力）
-        if cv.waitKey(300) & 0xFF == 27:  # 0.3秒待機（ESCキーで終了）
+        if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
