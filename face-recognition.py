@@ -1,7 +1,7 @@
 import face_recognition
 import cv2  # Import OpenCV
 import numpy as np
-
+import time  # 時間遅延を使うためのインポート
 # Webカメラのキャプチャを開始
 cap = cv2.VideoCapture(0)  # OpenCVでWebカメラをキャプチャ
 
@@ -24,11 +24,22 @@ while True:
 
     # 顔検出
     face_locations = face_recognition.face_locations(rgb_frame)
-    
+
     if face_locations:  # 顔が検出された場合のみ処理を行う
-        face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+        face_encodings = []
 
         # 1フレームで検出した顔分ループする
+        for face_location in face_locations:
+            print(f"Detected face location: {face_location}")  # Debugging the face location
+
+            # 各顔の特徴量を抽出
+            try:
+                face_encoding = face_recognition.face_encodings(rgb_frame, [face_location])[0]
+                face_encodings.append(face_encoding)
+            except Exception as e:
+                print(f"Error encoding face: {e}")  # Handling any encoding errors
+
+        # 検出した顔それぞれについて処理を行う
         for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
             # 特徴量を比較して一致する名前を探す
             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
@@ -52,6 +63,10 @@ while True:
     # 'q'キーで終了
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+    time.sleep(0.3)  # 0.3秒遅延
+
+
 
 # Webカメラとウィンドウを解放
 cap.release()
