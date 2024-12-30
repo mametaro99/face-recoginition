@@ -18,6 +18,12 @@ face_mesh = mp_face_mesh.FaceMesh(
     min_tracking_confidence=0.5,
 )
 
+# 目のアスペクト比に基づく閾値
+EAR_THRESHOLD_CLOSE = 1.6
+EAR_THRESHOLD_OPEN = 1.4
+eye_open = True
+blink_count = 0
+
 def calc_min_enc_losingCircle(landmark_list):
     center, radius = cv.minEnclosingCircle(np.array(landmark_list))
     center = (int(center[0]), int(center[1]))
@@ -162,9 +168,19 @@ def draw_gaze_arrow(image, eye_center, iris_center, direction, arrow_length):
     cv.arrowedLine(image, eye_center, end_point, (255, 0, 0), 2, tipLength=0.3)
     return image
 
-if __name__ == '__main__':
-    cap = cv.VideoCapture(0)  # Webカメラをキャプチャ
+def calculate_eye_ratio(face_landmarks, eye_landmarks):
+    # 眼のアスペクト比を計算する関数
+    eye_points = np.array([[face_landmarks.landmark[i].x, face_landmarks.landmark[i].y] for i in eye_landmarks])
+    # EAR計算
+    A = np.linalg.norm(eye_points[1] - eye_points[5])
+    B = np.linalg.norm(eye_points[2] - eye_points[4])
+    C = np.linalg.norm(eye_points[0] - eye_points[3])
+    eye_ratio = (A + B) / (2.0 * C)
+    return eye_ratio
 
+if __name__ == '__main__':
+    # ビデオキャプチャ開始
+    cap = cv.VideoCapture(0)  # Webカメラをキャプチャ
     prev_left_direction = None
     prev_right_direction = None
 
@@ -175,15 +191,32 @@ if __name__ == '__main__':
         debug_image = copy.deepcopy(image)
         image_width, image_height = image.shape[1], image.shape[0]
 
-        # 検出実施
+        left_eye_direction = None
+        right_eye_direction = None
+
+        # BGRからRGBに変換
         image_rgb = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+
+        # 顔のランドマークを検出
         results = face_mesh.process(image_rgb)
 
-        # 描画
-        if results.multi_face_landmarks is not None:
+        # 瞬きと目の状態を検出
+        if results.multi_face_landmarks:
             for face_landmarks in results.multi_face_landmarks:
-                # 直線を描画
                 debug_image = draw_eye_lines(debug_image, face_landmarks)
+                # 左右の目のランドマーク
+                left_eye_ratio = calculate_eye_ratio(face_landmarks, [33, 246, 161, 160, 159, 158, 157, 173])
+                right_eye_ratio = calculate_eye_ratio(face_landmarks, [263, 466, 388, 387, 386, 385, 384, 398])
+
+                # 目が閉じていると判断
+                if left_eye_ratio < EAR_THRESHOLD_CLOSE or right_eye_ratio < EAR_THRESHOLD_CLOSE:
+                    eye_open = False
+                # 目が開いていると判断
+                elif left_eye_ratio > EAR_THRESHOLD_OPEN or right_eye_ratio > EAR_THRESHOLD_OPEN:
+                    if not eye_open:
+                        blink_count += 1  # 瞬きの回数を増やす
+                    eye_open = True
+
                 # 虹彩の外接円の計算
                 left_eye, right_eye = None, None
                 left_eye, right_eye = calc_iris_min_enc_losingCircle(
@@ -209,21 +242,19 @@ if __name__ == '__main__':
                 debug_image = draw_gaze_arrow(debug_image, left_eye_center, left_eye[0], left_eye_direction, arrow_length)
                 debug_image = draw_gaze_arrow(debug_image, right_eye_center, right_eye[0], right_eye_direction, arrow_length)
 
-        # 両目の方向を表示
-        if left_eye_direction == right_eye_direction:
-            direction_text = f"Looking: {left_eye_direction}"
-        else:
-            direction_text = "Mismatch"
+        # 目の状態（まばたき、目の方向）を表示
+        cv.putText(debug_image, f"Left Eye: {left_eye_direction}", (50, 50), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv.putText(debug_image, f"Right Eye: {right_eye_direction}", (50, 100), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv.putText(debug_image, f"Blinks: {blink_count}", (50, 150), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
-        cv.putText(debug_image, direction_text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+        # 画像を表示
+        cv.imshow('Eye Direction and Blink Detection', debug_image)
 
-        cv.imshow("Gaze Direction", debug_image)
-
-
-        if cv.waitKey(1) & 0xFF == ord('q'):
+        # 'q'キーで終了
+        if cv.waitKey(10) & 0xFF == ord('q'):
             break
+        time.sleep(0.3)  # 0.3秒遅延
 
-        time.sleep(0.5)  # 0.5秒遅延
 
     cap.release()
     cv.destroyAllWindows()
