@@ -68,9 +68,9 @@ def get_eye_direction(eye_start, eye_end, iris_center):
     relative_position = (iris_center[0] - eye_start[0]) / eye_width
 
     # 虹彩の位置に基づいて方向を判断
-    if relative_position < 0.35:
+    if relative_position < 0.4:
         return 'left'
-    elif relative_position > 0.65:
+    elif relative_position > 0.6:
         return 'right'
     else:
         return 'center'
@@ -208,14 +208,22 @@ if __name__ == '__main__':
                 # 虹彩の中心と目の中心を使用して、見ている方向の矢印を描画
                 debug_image = draw_gaze_arrow(debug_image, left_eye_center, left_eye[0], left_eye_direction, arrow_length)
                 debug_image = draw_gaze_arrow(debug_image, right_eye_center, right_eye[0], right_eye_direction, arrow_length)
-                print(f"Left Eye is looking: {left_eye_direction}")
-                print(f"Right Eye is looking: {right_eye_direction}")
 
-        # 画面に結果を表示
+        # 両目の方向を表示
+        if left_eye_direction == right_eye_direction:
+            direction_text = f"Looking: {left_eye_direction}"
+        else:
+            direction_text = "Mismatch"
+
+        cv.putText(debug_image, direction_text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+
         cv.imshow("Gaze Direction", debug_image)
+
 
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
+
+        time.sleep(0.5)  # 0.5秒遅延
 
     cap.release()
     cv.destroyAllWindows()
