@@ -286,7 +286,6 @@ def perform_gaze_recognition(user):
             else:
                 match_count = 0
 
-        cv.putText(debug_image, f"Eye_direction: {match_count}", (50, 100), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         # 画像を表示
         cv.imshow('Eye Direction and Blink Detection', debug_image)
 
