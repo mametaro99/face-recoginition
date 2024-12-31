@@ -8,6 +8,7 @@ from wtforms.validators import InputRequired, Length, EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf.file import FileField, FileAllowed
 from werkzeug.utils import secure_filename
+from flask_migrate import Migrate
 import os
 
 
@@ -15,6 +16,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)  # Flask-Migrateの設定
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -25,20 +28,46 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     face_image = db.Column(db.String(150), nullable=True)
-    eye_patterns = db.Column(db.String, nullable=True)  # 文字列型に変更
+    
+    # 目線パターンを4つのカラムとして保存
+    eye_pattern_1 = db.Column(db.String, nullable=True)
+    eye_pattern_2 = db.Column(db.String, nullable=True)
+    eye_pattern_3 = db.Column(db.String, nullable=True)
+    eye_pattern_4 = db.Column(db.String, nullable=True)
 
 class FaceRecognitionForm(FlaskForm):
     face_image = FileField('Face Image', validators=[
         FileAllowed(['jpg', 'png'], 'Images only!')
     ])
-    selected_eye_pattern = SelectField('Eye Pattern', choices=[
+    
+    # 目線パターンを4つ選択できるように変更
+    eye_pattern_1 = SelectField('Eye Pattern 1', choices=[
         ('left', '左'),
         ('right', '右'),
         ('center', '真ん中'),
         ('blink', 'まばたき')
-    ], validators=[InputRequired(message="Please select at least one eye pattern.")])
+    ])
     
-    # 目線情報をHiddenFieldとして保持
+    eye_pattern_2 = SelectField('Eye Pattern 2', choices=[
+        ('left', '左'),
+        ('right', '右'),
+        ('center', '真ん中'),
+        ('blink', 'まばたき')
+    ])
+    
+    eye_pattern_3 = SelectField('Eye Pattern 3', choices=[
+        ('left', '左'),
+        ('right', '右'),
+        ('center', '真ん中'),
+        ('blink', 'まばたき')
+    ])
+    
+    eye_pattern_4 = SelectField('Eye Pattern 4', choices=[
+        ('left', '左'),
+        ('right', '右'),
+        ('center', '真ん中'),
+        ('blink', 'まばたき')
+    ])
 
 
 @login_manager.user_loader
@@ -90,7 +119,10 @@ def dashboard():
     user_data = {
         'username': current_user.username,
         'face_image': current_user.face_image,
-        'eye_patterns': current_user.eye_patterns,
+        'eye_pattern_1': current_user.eye_pattern_1,
+        'eye_pattern_2': current_user.eye_pattern_2,
+        'eye_pattern_3': current_user.eye_pattern_3,
+        'eye_pattern_4': current_user.eye_pattern_4,
     }
     return render_template('dashboard.html', user_data=user_data)
 
@@ -117,11 +149,11 @@ def face_recognition():
             form.face_image.data.save(filepath)
             current_user.face_image = filepath
 
-        # 目線認証データをカンマ区切りの文字列として保存
-        eye_patterns = form.selected_eye_pattern.data  # 目線パターンを取得
-        if eye_patterns:
-            # 目線パターンが選ばれていれば、カンマ区切りで保存
-            current_user.eye_patterns = eye_patterns
+        # 目線パターンを4つのカラムに格納
+        current_user.eye_pattern_1 = form.eye_pattern_1.data
+        current_user.eye_pattern_2 = form.eye_pattern_2.data
+        current_user.eye_pattern_3 = form.eye_pattern_3.data
+        current_user.eye_pattern_4 = form.eye_pattern_4.data
 
         db.session.commit()
         flash('Face and eye patterns registered successfully.', 'success')
@@ -135,6 +167,7 @@ def face_recognition():
                     app.logger.error(f"Error in {field}: {error}")
 
     return render_template('face_recognition.html', form=form)
+
 
 
 
