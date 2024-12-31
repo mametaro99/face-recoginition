@@ -9,14 +9,25 @@
     <p>Face Image:</p>
     <img src="{{ url_for('static', filename=current_user.face_image.split('static/')[1]) }}" alt="Face Image" width="150">
     {% endif %}
-    {% if current_user.eye_patterns %}
+    
+    {% if current_user.eye_pattern_1 or current_user.eye_pattern_2 or current_user.eye_pattern_3 or current_user.eye_pattern_4 %}
     <p>Eye Patterns:</p>
     <ul>
-        {% for pattern in current_user.eye_patterns %}
-        <li>{{ pattern }}</li>
-        {% endfor %}
+        {% if current_user.eye_pattern_1 %}
+        <li>1. {{ current_user.eye_pattern_1 }}</li>
+        {% endif %}
+        {% if current_user.eye_pattern_2 %}
+        <li>2. {{ current_user.eye_pattern_2 }}</li>
+        {% endif %}
+        {% if current_user.eye_pattern_3 %}
+        <li>3. {{ current_user.eye_pattern_3 }}</li>
+        {% endif %}
+        {% if current_user.eye_pattern_4 %}
+        <li>4. {{ current_user.eye_pattern_4 }}</li>
+        {% endif %}
     </ul>
     {% endif %}
+    
     <a href="{{ url_for('logout') }}">Logout</a>
     <a href="{{ url_for('face_recognition') }}">顔・視線認証の登録へ</a>
 </body>
