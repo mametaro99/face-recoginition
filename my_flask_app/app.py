@@ -25,7 +25,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     face_image = db.Column(db.String(150), nullable=True)
-    eye_patterns = db.Column(JSON, nullable=True)  # JSON型で配列を保存
+    eye_patterns = db.Column(db.String, nullable=True)  # 文字列型に変更
 
 class FaceRecognitionForm(FlaskForm):
     face_image = FileField('Face Image', validators=[
@@ -36,8 +36,10 @@ class FaceRecognitionForm(FlaskForm):
         ('right', '右'),
         ('center', '真ん中'),
         ('blink', 'まばたき')
-    ])
-    eye_patterns = HiddenField(validators=[InputRequired()])
+    ], validators=[InputRequired(message="Please select at least one eye pattern.")])
+    
+    # 目線情報をHiddenFieldとして保持
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -98,6 +100,7 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
 @app.route('/face_recognition', methods=['GET', 'POST'])
 @login_required
 def face_recognition():
@@ -114,9 +117,11 @@ def face_recognition():
             form.face_image.data.save(filepath)
             current_user.face_image = filepath
 
-        # 目線認証データを保存
-        eye_patterns = form.eye_patterns.data.split(',')
-        current_user.eye_patterns = eye_patterns
+        # 目線認証データをカンマ区切りの文字列として保存
+        eye_patterns = form.selected_eye_pattern.data  # 目線パターンを取得
+        if eye_patterns:
+            # 目線パターンが選ばれていれば、カンマ区切りで保存
+            current_user.eye_patterns = eye_patterns
 
         db.session.commit()
         flash('Face and eye patterns registered successfully.', 'success')
@@ -124,6 +129,10 @@ def face_recognition():
     else:
         if request.method == 'POST':
             flash('Failed to register face and eye patterns. Please check the form.', 'error')
+            # デバッグ用にエラーメッセージをログに出力
+            for field, errors in form.errors.items():
+                for error in errors:
+                    app.logger.error(f"Error in {field}: {error}")
 
     return render_template('face_recognition.html', form=form)
 
