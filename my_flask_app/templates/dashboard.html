@@ -2,33 +2,100 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #555555;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        li {
+            color: #333333;
+            background-color: #f1f1f1;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        img {
+            border-radius: 50%;
+            margin: 10px 0;
+        }
+
+        a {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            color: #ffffff;
+            background-color: #007BFF;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome, {{ current_user.username }}</h1>
-    {% if current_user.face_image %}
-    <p>Face Image:</p>
-    <img src="{{ current_user.face_image }}" alt="Face Image" width="150">
-    {% endif %}
-    
-    {% if current_user.eye_pattern_1 or current_user.eye_pattern_2 or current_user.eye_pattern_3 or current_user.eye_pattern_4 %}
-    <p>Eye Patterns:</p>
-    <ul>
-        {% if current_user.eye_pattern_1 %}
-        <li>1. {{ current_user.eye_pattern_1 }}</li>
+    <div class="container">
+        <h1>Welcome, {{ current_user.username }}</h1>
+        {% if current_user.face_image %}
+        <p>Face Image:</p>
+        <img src="{{ current_user.face_image }}" alt="Face Image" width="150">
         {% endif %}
-        {% if current_user.eye_pattern_2 %}
-        <li>2. {{ current_user.eye_pattern_2 }}</li>
+        
+        {% if current_user.eye_pattern_1 or current_user.eye_pattern_2 or current_user.eye_pattern_3 or current_user.eye_pattern_4 %}
+        <p>Eye Patterns:</p>
+        <ul>
+            {% if current_user.eye_pattern_1 %}
+            <li>1. {{ current_user.eye_pattern_1 }}</li>
+            {% endif %}
+            {% if current_user.eye_pattern_2 %}
+            <li>2. {{ current_user.eye_pattern_2 }}</li>
+            {% endif %}
+            {% if current_user.eye_pattern_3 %}
+            <li>3. {{ current_user.eye_pattern_3 }}</li>
+            {% endif %}
+            {% if current_user.eye_pattern_4 %}
+            <li>4. {{ current_user.eye_pattern_4 }}</li>
+            {% endif %}
+        </ul>
         {% endif %}
-        {% if current_user.eye_pattern_3 %}
-        <li>3. {{ current_user.eye_pattern_3 }}</li>
-        {% endif %}
-        {% if current_user.eye_pattern_4 %}
-        <li>4. {{ current_user.eye_pattern_4 }}</li>
-        {% endif %}
-    </ul>
-    {% endif %}
-    
-    <a href="{{ url_for('logout') }}">Logout</a>
-    <a href="{{ url_for('face_recognition') }}">顔・視線認証の登録へ</a>
+        
+        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('face_recognition') }}">顔・視線認証の登録へ</a>
+    </div>
 </body>
 </html>
