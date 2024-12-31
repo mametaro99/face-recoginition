@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
+from gaze_recognition_utils import perform_gaze_recognition
 from sqlalchemy import JSON
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -113,8 +114,14 @@ def face_login():
     if recognized_user:
         user = User.query.filter_by(username=recognized_user).first()
         if user:
-            login_user(user)
-            return redirect(url_for('dashboard'))
+            # 目線認証を行う
+            if perform_gaze_recognition(user):
+                login_user(user)
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Gaze recognition failed. Please try again.')
+                return redirect(url_for('face_login'))
+
     flash('Face recognition failed. Please try again.')
     return render_template('face_login.html')
 
