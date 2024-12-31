@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <title>Face Recognition</title>
+    <script>
+        function addEyePattern() {
+            const select = document.getElementById('eyePatternSelect');
+            const selectedValue = select.value;
+            const selectedText = select.options[select.selectedIndex].text;
+
+            const list = document.getElementById('eyePatternList');
+            const listItem = document.createElement('li');
+            listItem.textContent = selectedText;
+            list.appendChild(listItem);
+
+            const hiddenInput = document.getElementById('eyePatternsInput');
+            hiddenInput.value += (hiddenInput.value ? ',' : '') + selectedValue;
+        }
+    </script>
+</head>
+<body>
+    <h1>Register Face and Eye Patterns</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul>
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.face_image.label }}
+            {{ form.face_image }}
+        </p>
+        <p>
+            {{ form.selected_eye_pattern.label }}
+            <select id="eyePatternSelect">
+                {% for value, label in form.selected_eye_pattern.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="button" onclick="addEyePattern()">Add</button>
+        </p>
+        <ul id="eyePatternList"></ul>
+        {{ form.eye_patterns }}
+        <p><button type="submit">Submit</button></p>
+    </form>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
