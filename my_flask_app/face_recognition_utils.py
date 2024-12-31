@@ -29,8 +29,16 @@ def recognize_face_from_camera(users):
 
     cap = cv2.VideoCapture(0)  # Webカメラを起動
 
+    if not cap.isOpened():
+        print("Error: Unable to access the camera.")
+        return None
+
     while True:
         ret, frame = cap.read()
+        if not ret:
+            print("Error: Unable to read from the camera.")
+            break
+
         rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])  # RGB形式に変換
         face_locations = face_recognition.face_locations(rgb_frame)
 
@@ -44,12 +52,20 @@ def recognize_face_from_camera(users):
                 if min_dist < 0.40:  # 類似度が0.40以下なら一致
                     match_index = np.argmin(dists)
                     name = known_face_names[match_index]
+
+                    # 顔の位置に名前を描画
+                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                    cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
                     cap.release()
                     cv2.destroyAllWindows()
                     return name
 
+        # フレームを表示
         cv2.imshow('Face Recognition', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # 'q'キーで終了
+
+        # 'q'キーで終了
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
