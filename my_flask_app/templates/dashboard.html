@@ -1,28 +1,10 @@
 <!doctype html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Dashboard</title>
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size=32) }}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}
-        </p>
-        <p>
-            {{ form.remember }} {{ form.remember.label }}
-        </p>
-        <p><input type="submit" value="Login"></p>
-    </form>
-    <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
-    {% for message in get_flashed_messages() %}
-        <p>{{ message }}</p>
-    {% endfor %}
+    <h1>Hello, {{ current_user.username }}!</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>
