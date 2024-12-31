@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import JSON
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
@@ -20,7 +21,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     face_image = db.Column(db.String(150), nullable=True)
-    eye_patterns = db.Column(db.String(150), nullable=True)
+    eye_patterns = db.Column(JSON, nullable=True)  # JSON型で配列を保存
 
 @login_manager.user_loader
 def load_user(user_id):
