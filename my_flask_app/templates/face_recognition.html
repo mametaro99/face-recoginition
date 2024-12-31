@@ -4,95 +4,164 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        form p {
+            margin: 10px 0;
+            text-align: left;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            color: red;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+            display: block;
+            margin-top: 15px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Register Face and Eye Patterns</h1>
-    
-    <!-- フラッシュメッセージの表示 -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <ul>
-        {% for category, message in messages %}
-        <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+    <div class="container">
+        <h1>Register Face and Eye Patterns</h1>
         
-        <!-- 顔画像のアップロード -->
-        <p>
-            {{ form.face_image.label }}
-            {{ form.face_image }}
-            {% if form.face_image.errors %}
-                <ul>
-                    {% for error in form.face_image.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </p>
+        <!-- フラッシュメッセージの表示 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul>
+            {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
 
-        <!-- 目線パターン1 -->
-        <p>
-            {{ form.eye_pattern_1.label }}
-            {{ form.eye_pattern_1 }}
-            {% if form.eye_pattern_1.errors %}
-                <ul>
-                    {% for error in form.eye_pattern_1.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </p>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <!-- 顔画像のアップロード -->
+            <p>
+                {{ form.face_image.label }}
+                {{ form.face_image }}
+                {% if form.face_image.errors %}
+                    <ul>
+                        {% for error in form.face_image.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
 
-        <!-- 目線パターン2 -->
-        <p>
-            {{ form.eye_pattern_2.label }}
-            {{ form.eye_pattern_2 }}
-            {% if form.eye_pattern_2.errors %}
-                <ul>
-                    {% for error in form.eye_pattern_2.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </p>
+            <!-- 目線パターン1 -->
+            <p>
+                {{ form.eye_pattern_1.label }}
+                {{ form.eye_pattern_1 }}
+                {% if form.eye_pattern_1.errors %}
+                    <ul>
+                        {% for error in form.eye_pattern_1.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
 
-        <!-- 目線パターン3 -->
-        <p>
-            {{ form.eye_pattern_3.label }}
-            {{ form.eye_pattern_3 }}
-            {% if form.eye_pattern_3.errors %}
-                <ul>
-                    {% for error in form.eye_pattern_3.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </p>
+            <!-- 目線パターン2 -->
+            <p>
+                {{ form.eye_pattern_2.label }}
+                {{ form.eye_pattern_2 }}
+                {% if form.eye_pattern_2.errors %}
+                    <ul>
+                        {% for error in form.eye_pattern_2.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
 
-        <!-- 目線パターン4 -->
-        <p>
-            {{ form.eye_pattern_4.label }}
-            {{ form.eye_pattern_4 }}
-            {% if form.eye_pattern_4.errors %}
-                <ul>
-                    {% for error in form.eye_pattern_4.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </p>
+            <!-- 目線パターン3 -->
+            <p>
+                {{ form.eye_pattern_3.label }}
+                {{ form.eye_pattern_3 }}
+                {% if form.eye_pattern_3.errors %}
+                    <ul>
+                        {% for error in form.eye_pattern_3.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
 
-        <!-- 送信ボタン -->
-        <p>
-            <button type="submit">Submit</button>
-        </p>
-    </form>
+            <!-- 目線パターン4 -->
+            <p>
+                {{ form.eye_pattern_4.label }}
+                {{ form.eye_pattern_4 }}
+                {% if form.eye_pattern_4.errors %}
+                    <ul>
+                        {% for error in form.eye_pattern_4.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
 
-    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+            <!-- 送信ボタン -->
+            <p>
+                <button type="submit">Submit</button>
+            </p>
+        </form>
+
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </div>
 </body>
 </html>
