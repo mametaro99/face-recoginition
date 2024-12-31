@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf.file import FileField, FileAllowed
 from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
+from face_recognition_utils import recognize_face_from_camera
 import os
 
 
@@ -23,18 +24,18 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-class User(UserMixin, db.Model):
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     face_image = db.Column(db.String(150), nullable=True)
-    
+
     # 目線パターンを4つのカラムとして保存
     eye_pattern_1 = db.Column(db.String, nullable=True)
     eye_pattern_2 = db.Column(db.String, nullable=True)
     eye_pattern_3 = db.Column(db.String, nullable=True)
     eye_pattern_4 = db.Column(db.String, nullable=True)
-
 class FaceRecognitionForm(FlaskForm):
     face_image = FileField('Face Image', validators=[
         FileAllowed(['jpg', 'png'], 'Images only!')
@@ -99,6 +100,23 @@ def login():
             return redirect(url_for('dashboard'))
         flash('Invalid username or password')
     return render_template('login.html', form=form)
+
+
+@app.route('/face_login', methods=['GET', 'POST'])
+def face_login():
+    # DBからユーザー情報を取得して辞書形式で格納
+    users = [{'name': user.username, 'face_image': user.face_image} for user in User.query.all()]
+
+    # 顔認証を実行
+    recognized_user = recognize_face_from_camera(users)
+
+    if recognized_user:
+        user = User.query.filter_by(username=recognized_user).first()
+        if user:
+            login_user(user)
+            return redirect(url_for('dashboard'))
+    flash('Face recognition failed. Please try again.')
+    return render_template('face_login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
