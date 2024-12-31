@@ -2,24 +2,11 @@
 <html>
 <head>
     <title>Face Recognition</title>
-    <script>
-        function addEyePattern() {
-            const select = document.getElementById('eyePatternSelect');
-            const selectedValue = select.value;
-            const selectedText = select.options[select.selectedIndex].text;
-
-            const list = document.getElementById('eyePatternList');
-            const listItem = document.createElement('li');
-            listItem.textContent = selectedText;
-            list.appendChild(listItem);
-
-            const hiddenInput = document.getElementById('eyePatternsInput');
-            hiddenInput.value += (hiddenInput.value ? ',' : '') + selectedValue;
-        }
-    </script>
 </head>
 <body>
     <h1>Register Face and Eye Patterns</h1>
+    
+    <!-- フラッシュメッセージ表示 -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <ul>
@@ -29,25 +16,36 @@
     </ul>
     {% endif %}
     {% endwith %}
+
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
+        
         <p>
             {{ form.face_image.label }}
             {{ form.face_image }}
+            {% if form.face_image.errors %}
+                <ul>
+                    {% for error in form.face_image.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </p>
+
         <p>
             {{ form.selected_eye_pattern.label }}
-            <select id="eyePatternSelect">
+            <select id="eyePatternSelect" name="selected_eye_pattern">
                 {% for value, label in form.selected_eye_pattern.choices %}
                 <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
             </select>
-            <button type="button" onclick="addEyePattern()">Add</button>
         </p>
-        <ul id="eyePatternList"></ul>
-        {{ form.eye_patterns }}
-        <p><button type="submit">Submit</button></p>
+        
+        <p>
+            <button type="submit">Submit</button>
+        </p>
     </form>
+
     <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 </body>
 </html>
