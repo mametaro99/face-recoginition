@@ -292,7 +292,7 @@ def perform_gaze_recognition(user):
         # 'q'キーで終了
         if cv.waitKey(10) & 0xFF == ord('q'):
             break
-        time.sleep(0.8)  # 0.3秒遅延
+        time.sleep(0.8)  # 0.8秒遅延
 
     cap.release()
     return False
