@@ -17,7 +17,7 @@
 
 以下のように、目線認証では、向いている方向が画面に表示されます。
 
-真ん中を向いているため、画面の上部に「center」と表示されます。
+以下の画像では真ん中を向いているため、画面の上部に「center」と表示されます。
 
 ![alt text](image-1.png)
 
@@ -41,6 +41,7 @@
 参考:
 
 [顔認識システムに対する敵対的攻撃の脅威調査 AIディフェンス研究所_2021年2月24日](https://jpsec.ai/adversarial-face-recognition-survey/)
+
 [ディープフェイクの脅威と顔認証の未来：求められる多要素認証_RADIX](https://www.radix.ad.jp/support/news/view/1297)
 
 
@@ -83,11 +84,16 @@ eye_pattern_1～eye_pattern_４は、ユーザの目線認証の各回数の動�
 上記の顔認証のソースコードで使われている主な関数についての説明を行います。
 
 
+
 ### perform_gaze_recognition(user)
 
-[perform_gaze_recognition(user)](https://github.com/mametaro99/face-recoginition/blob/eab553c762f9f325eed6d8db90fdf305567fbc2f/my_flask_app/gaze_recognition_utils.py#L179)では、引数として User クラスで作成された user を受け取っています。この関数では、ライブラリである mediapipe を使って、ユーザの顔やパーツを識別し、openCV を使って目線、目・瞳孔の輪郭を描画しています。そして、0.8 秒ごとにユーザの目線の情報を検知して、user に含まれる eye_pattern1 から pattern4 までの視線の情報と連続で一致した場合に True を返すようになっています。ここで、0.8 秒の間に、目が開いた状態から目が閉じて、再び目が開いた場合にまばたきと検出されます。
+[perform_gaze_recognition(user)](https://github.com/mametaro99/face-recoginition/blob/eab553c762f9f325eed6d8db90fdf305567fbc2f/my_flask_app/gaze_recognition_utils.py#L179)では、引数として User クラスで作成された user を受け取っています。この関数では、ライブラリであるmediapipeを使って、ユーザの顔やパーツを識別し、openCV を使って目線、目・瞳孔の輪郭を描画しています。
+
+そして、0.8 秒ごとにユーザの目線の情報を検知して、user に含まれる eye_pattern1 から pattern4 までの視線の情報と連続で一致した場合に True を返すようになっています。ここで、0.8 秒の間に、目が開いた状態から目が閉じて、再び目が開いた場合にまばたきと検出されます。
+
 
 ### get_eye_direction (eye_start, eye_end, iris_center)
+
 
 [get_eye_direction (eye_start, eye_end, iris_center)](https://github.com/mametaro99/face-recoginition/blob/eab553c762f9f325eed6d8db90fdf305567fbc2f/my_flask_app/gaze_recognition_utils.py#L54)では、引数に MediaPipe で取得した eye_start(目の左端の座標), eye_end（目の右
 端の座標）, iris_center(虹彩の中心座標)を受け取り、視線の向いている方向を戻り値として
